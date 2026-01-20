@@ -1,0 +1,19 @@
+WinSysDevice::Mouse MouseKey = WinSysDevice::MouseNULL;
+short MouseWheel = 0;
+class MouseHook : public WinSysHook {
+ LRESULT OnMouseLL(int nCode, WPARAM wParam, LPARAM lParam) override {
+  if (nCode >= 0) {
+   if (wParam == WM_MOUSEWHEEL) {
+    MSLLHOOKSTRUCT* mouseInfo = (MSLLHOOKSTRUCT*)lParam;
+    MouseWheel = HIWORD(mouseInfo->mouseData);
+   }
+   else {
+    MouseKey = Mouse.ExchangeMouseMSG(wParam);
+   }
+  }
+  return CallNextHookEx(HookHandle, nCode, wParam, lParam);
+ }
+} hookMouse;
+hookMouse.IntsallHook(MouseHook::HOOK_MOUSE_LL, 0); //安装钩子
+hookMouse.DispatchMSG();  // 派谴消息
+hookMouse.UnInstallHook(); // 卸载钩子
